@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 const char ADDR_SERVER[] = "10.211.55.5";
-const char PORT_SERVER = 5000;
+const int PORT_SERVER = 5000;
 const int SIZE = 30;
 
 void CreateSocket(int &fd)
@@ -22,6 +22,7 @@ void CreateSocket(int &fd)
         std::cerr << "CreateSocket() failed...\n";
         exit(EXIT_FAILURE);
     }
+    std::cout << "SERVER: socket created...\n";
 }
 
 void SetAddress(struct sockaddr_in &addr_serv, int &rc, int &fd)
@@ -33,9 +34,13 @@ void SetAddress(struct sockaddr_in &addr_serv, int &rc, int &fd)
     if(rc < 0)
     {
         std::cerr << "SetAddress() failed...\n";
+        close(fd);
         exit(EXIT_FAILURE);       
     }
+
     addr_serv.sin_port = htons(PORT_SERVER);
+
+    std::cout << "SERVER: address is set...\n";
 }
 
 void BindSocket(struct sockaddr_in &addr_serv, int &rc, int &fd)
@@ -47,10 +52,14 @@ void BindSocket(struct sockaddr_in &addr_serv, int &rc, int &fd)
         close(fd);
         exit(EXIT_FAILURE);
     }
+
+    std::cout << "SERVER: socket is bound...\n";
 }
 
 void Receive(char buffer[], sockaddr_in &addr_cli, socklen_t &addr_len, int &length, int &fd)
 {
+    
+    
     length = recvfrom(fd, buffer, SIZE, 0, (struct sockaddr *)&addr_cli, &addr_len);
     if( length < 0)
     {
@@ -58,6 +67,8 @@ void Receive(char buffer[], sockaddr_in &addr_cli, socklen_t &addr_len, int &len
         close(fd);
         exit(EXIT_FAILURE);
     }
+
+    std::cout << "SERVER: receive success...\n";
 }
 
 void Send(char old_buffer[], struct sockaddr_in &addr_cli, socklen_t &addr_len, int &length, int &fd)
@@ -65,18 +76,20 @@ void Send(char old_buffer[], struct sockaddr_in &addr_cli, socklen_t &addr_len, 
     char new_buffer[SIZE];
     memset(new_buffer, 0, sizeof(new_buffer));
 
-    for(int i = 0; i < length, i++)
+    for(int i = 0; i < length; i++)
     {
         new_buffer[i] = toupper(old_buffer[i]);
     }
 
-    length = sendto( fd, new_buffer, length, 0, (struct sockaddr *)&addr_cli, &addr_len );
+    length = sendto( fd, new_buffer, length, 0, (struct sockaddr *)&addr_cli, addr_len );
     if (length < 0)
     {
         std::cerr << "Send() failed...\n";
         close(fd);
         exit(EXIT_FAILURE);        
     }
+
+    std::cout << "SERVER: send success...\n";
 }
 
 int main(int argc, char *argv[])
